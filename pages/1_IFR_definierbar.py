@@ -24,7 +24,7 @@ def eingabe_pfahlparameter(c_u, gamma):
     L = st.number_input("Einbindelänge L (m)", value=10.0, min_value=0.0)
     t_mm = st.number_input("Wandstärke t (mm)", value=40.0, min_value=0.0)
     t = t_mm / 1000
-
+    D_plug = D - 2*t
     A = np.pi * D**2 / 4
     A_ann = ((D/2)**2 - (D/2 - t)**2) * np.pi
     A_plug = (D/2 - t)**2 * np.pi
@@ -32,7 +32,7 @@ def eingabe_pfahlparameter(c_u, gamma):
     U_plug = np.pi * (D - 2 * t)
 
     h_1_default = 2 * c_u / gamma
-    return D, L, t, A, A_ann, A_plug, U, U_plug, h_1_default
+    return D, D_plug, L, t, A, A_ann, A_plug, U, U_plug, h_1_default
 
 def eingabe_interaktion():
     st.header("Interaktion Pfahl-Boden")
@@ -62,30 +62,14 @@ def eingabe_berechnungseinstellungen():
 
 
 
-st.header('Hintergrund')
-st.info('Der Pfropfenwiderstand wird nach folgenden Gleichungen berechnet. ')
-st.latex(r'''
-    \sigma_{v,plug,1}=p+(\gamma^\prime+\gamma_w\ )h    \\
-    \sigma_{v,plug,2}=p+\gamma^\prime h_{c,1}+\gamma_wh+\left(p+\gamma\prime\frac{A}{UK_0\mu}\right)\left(e^\frac{\left(h-h_{c,1}\right)UK_0\mu}{A}-1\right)\\
-    \sigma_{v,plug,3}=p+\gamma\prime h_{c,1}+\gamma_wh+\frac{c_u}{\mu K_0}+\left(h-h_{c,1}-h_{c,2}\right)\left(\gamma\prime+c_u\frac{U}{A}\right) 
-        ''')
-st.latex(r'''
-    \frac{d\sigma_{v}}{dz}=\gamma^\prime+\gamma_w\    \\
-    \frac{d\sigma_{v}}{dz}=\left(p + \left(e^\left(4\mu K_0 \Delta z / D\right)-1\right)\right)\left(p+D*\gamma/\left(4 \mu k_0\right)\right)\\
-    \sigma_{v,plug,3}=p+\gamma\prime h_{c,1}+\gamma_wh+\frac{c_u}{\mu K_0}+\left(h-h_{c,1}-h_{c,2}\right)\left(\gamma\prime+c_u\frac{U}{A}\right) 
-        ''')
-st.info('Zudem wird der Pfahlspitzendruck eines offenen Profils angesetzt, um die maximale Belastung auf den Pfropfen zu begrenzen.')
-st.latex(r'''
-    \sigma_{v,closed}=(\gamma^\prime+\gamma_w\ )z + N_c c_u    
-        ''')
 # -------------------------
 # Hauptcode
 # -------------------------
 # Eingaben sammeln
 c_u, gamma, gamma_w, N_c_max, N_c_option, K_0 = eingabe_bodenparameter()
-D, L, t, A, A_ann, A_plug, U, U_plug, h_1_default = eingabe_pfahlparameter(c_u, gamma)
+D, D_plug, L, t, A, A_ann, A_plug, U, U_plug, h_1_default = eingabe_pfahlparameter(c_u, gamma)
 mu = eingabe_interaktion()
-IFR_0, h_1 = eingabe_pfropfenmodell(A_ann, A_plug, h_1_default)
+#IFR_0, h_1 = eingabe_pfropfenmodell(A_ann, A_plug, h_1_default)
 
 n_steps, z_initial, threshold, max_iterations = eingabe_berechnungseinstellungen()
 
@@ -157,38 +141,42 @@ elif ifr_mode == "Polynom":
     z_ifr = z
     IFR_values = np.polyval(coeffs[::-1], z_ifr)
 
+IFR_values = np.array(IFR_values)
+IFR_values = np.interp(z, z_ifr, IFR_values)
 IFR = IFR_values
 
 dz = np.diff(z)
 IFR_avg = 0.5 * (IFR_values[1:] + IFR_values[:-1])
 h = np.concatenate([[0], np.cumsum(dz * IFR_avg)])
 
-
-
-# Funktionen für q_plug
-def cal_q_plug_1(gamma, gamma_w, h_val):
-    return (gamma+gamma_w) * h_val
-
-def cal_q_plug_2(gamma, gamma_w, h_val, A, U, mu, K0, h_c1):
-    return gamma * h_c1 + gamma * A/U/K0/mu * (np.exp((h_val - h_c1)/(A/(U*K0*mu))) - 1) + gamma_w * h_val
-
-def cal_q_plug_3(gamma, gamma_w, h_val, A, U, c_u, mu, K_0, h_c1, h_c2):
-    return gamma * h_c1 + c_u / mu / K_0 + (h_val - h_c2) * (gamma + c_u * U / A) + gamma_w * h_val
-def cal_q_plugged(gamma, gamma_w, dz, q_plug_old):
-    return q_plug_old + (gamma + gamma_w) * dz
-
 # Berechne q_plug über h
+q_plug = {}
 for i in range(len(h)):
-    h_i = h[i]
-    if z[i]> z_iterated and i>0: # fully plugged, just add soil weight
-        q_plug[i] =cal_q_plugged(gamma, gamma_w, dz, q_b[i-1]) 
-    elif h_i <= h_1:
-        q_plug[i] = cal_q_plug_1(gamma, gamma_w, h_i)
-    elif h_i <= h_2:
-        q_plug[i] = cal_q_plug_2(gamma, gamma_w, h_i, A_plug, U_plug, mu, K_0, h_1)
+    if i == 0:
+        q_plug[i] = 0  # Startwert oben
     else:
-        q_plug[i] = cal_q_plug_3(gamma, gamma_w, h_i, A_plug, U_plug, c_u, mu, K_0, h_1, h_2)
+        dz_local = z[i] - z[i-1]
+        p = q_plug[i-1]
+
+        # Exponentieller Anstieg
+        delta_stress_exp = np.exp(4 * mu * K_0 * dz_local / D) * (4 * mu * K_0 / D * p + gamma)
+
+        # Grenzwert für Schubspannung
+        delta_stress_limit = gamma + c_u * U_plug / A
+
+        if delta_stress_exp <= delta_stress_limit:
+            q_plug[i] = p + (np.exp(4 * mu * K_0 * dz_local / D) - 1) * (p + gamma * D / (4 * mu * K_0))
+        else:
+            q_plug[i] = p + (gamma + c_u * U_plug / A) * dz_local
+        
+        # Grenzwert geschlossener Pfahl
+        max_q = q_b[i]
+        if q_plug[i]> max_q:
+            q_plug[i] = max_q
+
+# Umwandlung in NumPy-Array für weitere Verwendung
 q_plug = np.array([q_plug[i] for i in range(len(z))])
+
 
 # Berechne Spitzendruck offener Pfahl
 def cal_q_b_open(q_plug, q_ann, A, A_plug, A_ann):
@@ -260,10 +248,10 @@ if st.checkbox("Parameterdetails anzeigen"):
     param_data = {
         "Parameter": [
             "A", "A_ann", "A_plug",
-            "U", "U_plug", "h₁", "h₂"
+            "U", "U_plug"
         ],
         "Wert": [
-            A, A_ann, A_plug, U, U_plug, h_1, h_2
+            A, A_ann, A_plug, U, U_plug
         ]
     }
     df_param = pd.DataFrame(param_data)
