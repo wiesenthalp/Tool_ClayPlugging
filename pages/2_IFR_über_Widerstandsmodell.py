@@ -95,7 +95,7 @@ def interpolate_profile(boden_df, z):
     c_u_werte = boden_df["c_u [kPa]"].to_numpy()
     gamma_werte = boden_df["γ' [kN/m³]"].to_numpy()
     N_c_max_werte = boden_df["N_c_max"].to_numpy()
-    K_0_werte = boden_df["K_0"].to_numpy()
+    K_0_werte = boden_df["K₀ [-]"].to_numpy()
 
     # Erzeuge Stützstellen
     z_stuetz = []
