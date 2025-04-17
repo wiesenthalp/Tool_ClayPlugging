@@ -165,10 +165,10 @@ q_b = np.zeros(n_steps)
 sig_z0 = np.zeros(n_steps)
 for i in range(len(z)):
     if i==0:
-        sig_z0 = 0
+        sig_z0[i] = 0
     else:
-        sig_z0 += z[i] * gamma[i]
-    q_b[i] = sig_z0 + N_c_z[i] * c_u[i]
+        sig_z0[i] += z[i] * gamma[i]
+    q_b[i] = sig_z0[i] + N_c_z[i] * c_u[i]
 
 
 
