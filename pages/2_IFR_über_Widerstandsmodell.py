@@ -110,11 +110,13 @@ ifr_mode = st.selectbox("Art der IFR-Eingabe wählen:", ["Widerstand"])
 h = np.zeros(n_steps)
 q_plug = np.zeros(n_steps)
 IFR = np.zeros(n_steps)
+dh = np.zeros(n_steps)
 for i in range(len(h)):
     if i == 0:
         h[i] = 0
         q_plug[i] = 0  # Startwert oben
         IFR[i] = None
+        dh[i] = None
     else:
         # ------------------------------------------------------------------------
         # calculate h and IFR
@@ -124,8 +126,8 @@ for i in range(len(h)):
             qbopen = cal_q_b_open(q_plug[i-1], q_b[i-1], A, A_plug, A_ann)
             qbclosed = q_b[i-1]
             IFR[i] =  cal_IFR_from_ratio_qbopen_qbclosed(qbopen, qbclosed)
-        dh = IFR[i] * dz_local
-        h[i] = h[i-1]+ dh
+        dh[i] = IFR[i] * dz_local
+        h[i] = h[i-1]+ dh[i]
         # ------------------------------------------------------------------------
         # plug resistance
         # ------------------------------------------------------------------------
@@ -155,6 +157,7 @@ q_b_open = cal_q_b_open(q_plug, q_ann, A, A_plug, A_ann)
 df_q_plug = pd.DataFrame({
     "Tiefe z [m]": z,
     "IFR [-]": IFR,
+    "dh [m]": dh ,
     "h [m]": h ,
     "q_plug [kN/m²]": q_plug,
     "q_b_open [kN/m²]": q_b_open, 
