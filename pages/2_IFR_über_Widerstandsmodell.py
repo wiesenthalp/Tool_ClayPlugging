@@ -28,7 +28,7 @@ def eingabe_bodenschichten():
     df_display = np.transpose(df)
     #for i in range(len(df_display)):
     #df_display[0] = f"Schicht {1}"
-    st.write(df_display.keys())
+    df_display["Schicht 1"] = df_display[0]
     edited_df = st.data_editor(df_display, num_rows="dynamic", key="boden_tabelle")
 
     
