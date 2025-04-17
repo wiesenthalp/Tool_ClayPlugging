@@ -93,7 +93,7 @@ def interpolate_profile(boden_df, z):
     tiefe_von = boden_df["Tiefe_von [m]"].to_numpy()
     tiefe_bis = boden_df["Tiefe_bis [m]"].to_numpy()
     c_u_werte = boden_df["c_u [kPa]"].to_numpy()
-    gamma_werte = boden_df["γ [kN/m³]"].to_numpy()
+    gamma_werte = boden_df["γ' [kN/m³]"].to_numpy()
     N_c_max_werte = boden_df["N_c_max"].to_numpy()
     K_0_werte = boden_df["K_0"].to_numpy()
 
