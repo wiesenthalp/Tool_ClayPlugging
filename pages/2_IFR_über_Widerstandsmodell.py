@@ -119,7 +119,7 @@ if ifr_mode == "Widerstand":
     ratio = np.arange(0,1.01, 0.01)
     IFR_demo = np.zeros(len(ratio))
     for i in range(len(ratio)):
-        IFR_demo[i] =  cal_IFR_from_ratio_qbopen_qbclosed(ratio, 1.0)
+        IFR_demo[i] =  cal_IFR_from_ratio_qbopen_qbclosed(ratio[i], 1.0)
 fig, axes = plt.subplots(1,3, figsize=(16, 8))
 ax=axes[1]
 ax.plot(ratio, IFR_demo, label="closed-ended", color = 'black')
