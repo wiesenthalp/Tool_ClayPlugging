@@ -13,9 +13,11 @@ def eingabe_bodenschichten():
     st.header("Bodenschichten")
     n_schichten = st.number_input("Anzahl der Bodenschichten", min_value=1, max_value=10, value=1, step=1)
 
+    max_depth_default = 20 
+
     default_data = {
-        "Tiefe_von [m]": [0.0] + [float(i) * 10 for i in range(1, n_schichten)],
-        "Tiefe_bis [m]": [float(i) * 10 for i in range(1, n_schichten + 1)],
+        "Tiefe_von [m]": [0.0] + [(float(i) / n_schichten) * max_depth_default for i in range(1, n_schichten)],
+        "Tiefe_bis [m]": [(float(i)/(n_schichten + 1)) * 10 for i in range(1, n_schichten + 1)],
         "c_u [kPa]": [10.0] * n_schichten,
         "γ' [kN/m³]": [10.0] * n_schichten,
         "γ_w [kN/m³]": [0.0] * n_schichten,
