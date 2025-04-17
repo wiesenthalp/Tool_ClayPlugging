@@ -17,7 +17,7 @@ def eingabe_bodenschichten():
 
     default_data = {
         "Tiefe_von [m]": [0.0] + [(float(i) / n_schichten) * max_depth_default for i in range(1, n_schichten)],
-        "Tiefe_bis [m]": [(float(i+1)/(n_schichten)) * max_depth_default for i in range(1, n_schichten + 1)],
+        "Tiefe_bis [m]": [(float(i)/(n_schichten)) * max_depth_default for i in range(1, n_schichten + 1)],
         "c_u [kPa]": [10.0] * n_schichten,
         "γ' [kN/m³]": [10.0] * n_schichten,
         "γ_w [kN/m³]": [0.0] * n_schichten,
