@@ -25,7 +25,11 @@ def eingabe_bodenschichten():
         "N_c_max": [9.0] * n_schichten,
     }
     df = pd.DataFrame(default_data)
-    edited_df = st.data_editor(np.transpose(df), num_rows="dynamic", key="boden_tabelle")
+    df_display = np.transpose(df)
+    for i in range(len(df_display)):
+        df_display[i][0] = f"Schicht {i}"
+
+    edited_df = st.data_editor(df_display, num_rows="dynamic", key="boden_tabelle")
 
     
     N_c_option = st.radio("Verlauf von N_c:", ["Hyperbolisch", "Konstant"])
