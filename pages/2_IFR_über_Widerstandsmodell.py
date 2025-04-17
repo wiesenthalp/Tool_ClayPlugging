@@ -52,13 +52,21 @@ def eingabe_pfropfenmodell(A_ann, A_plug, h_1_default):
     h_1 = st.number_input("h₁ (m)", value=h_1_default)
     return IFR_0, h_1
 
-def eingabe_berechnungseinstellungen():
+def eingabe_berechnungseinstellungen(case):
     st.header("Berechnungseinstellungen")
-    n_steps = st.number_input("Anzahl Tiefeninkremente", value=501, min_value=10, max_value=1000, step=10)
-    z_initial = st.number_input("Startwert Tiefe volle Pfropfenbildung für Iteration", value=6.0, min_value=0.0, max_value=1000.0, step=1.0)
-    threshold= st.number_input("Threshold", value=0.0001, min_value=0.0000001, max_value=1.0, step=.001)
-    max_iterations= st.number_input("Begrenzung Anzahl Iterationen", value=100, min_value=1, max_value=1000, step=10)
-    return n_steps, z_initial, threshold, max_iterations
+    n_steps_default = 501
+    z_initial_default = 6.0
+    threshold_default = 0.0001
+    max_iterations_default = 100
+    if case == 'long':
+        n_steps = st.number_input("Anzahl Tiefeninkremente", value=n_steps_default, min_value=10, max_value=1000, step=10)
+        z_initial = st.number_input("Startwert Tiefe volle Pfropfenbildung für Iteration", value=z_initial_default, min_value=0.0, max_value=1000.0, step=1.0)
+        threshold= st.number_input("Threshold", value=threshold_default, min_value=0.0000001, max_value=1.0, step=.001)
+        max_iterations= st.number_input("Begrenzung Anzahl Iterationen", value=max_iterations_default, min_value=1, max_value=1000, step=10)
+        return n_steps, z_initial, threshold, max_iterations
+    elif case == 'short':
+        n_steps = st.number_input("Anzahl Tiefeninkremente", value=n_steps_default, min_value=10, max_value=1000, step=10)
+        return n_steps, None, None, None
 
 # -------------------------
 # Sonstige Funktionen
@@ -82,7 +90,7 @@ D, D_plug, L, t, A, A_ann, A_plug, U, U_plug, h_1_default = eingabe_pfahlparamet
 mu = eingabe_interaktion()
 #IFR_0, h_1 = eingabe_pfropfenmodell(A_ann, A_plug, h_1_default)
 
-n_steps, z_initial, threshold, max_iterations = eingabe_berechnungseinstellungen()
+n_steps, z_initial, threshold, max_iterations = eingabe_berechnungseinstellungen(case='short')
 
 # -------------------------
 # Berechnung geschlossener Pfahl
