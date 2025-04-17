@@ -8,17 +8,36 @@ st.warning('Wiesenthal, P., Henke, S. Concept on plug development in jacked open
 # -------------------------
 # Eingabefunktionen
 # -------------------------
-def eingabe_bodenparameter():
-    st.header("Bodenparameter")
-    c_u = st.number_input("Undränierte Scherfestigkeit c_u (kPa)", value=10.0, min_value=0.0)
-    gamma = st.number_input("Wichte γ' (kN/m³)", value=10.0, min_value=0.0)
-    gamma_w = st.number_input("Wichte Wasser γ_w (kN/m³)", value=0.0, min_value=0.0, max_value=0.0)
-    K_0 = st.number_input("K_0 (-)", value=1.0, min_value=0.0)
-    N_c_max = st.number_input("Maximaler Widerstandsfaktor N_c", value=9.0, min_value=0.0)
-    N_c_option = st.radio("Verlauf von N_c:", ["Hyperbolisch", "Konstant"])
-    return c_u, gamma, gamma_w, N_c_max, N_c_option, K_0
+# def eingabe_bodenparameter():
+#     st.header("Bodenparameter")
+#     c_u = st.number_input("Undränierte Scherfestigkeit c_u (kPa)", value=10.0, min_value=0.0)
+#     gamma = st.number_input("Wichte γ' (kN/m³)", value=10.0, min_value=0.0)
+#     gamma_w = st.number_input("Wichte Wasser γ_w (kN/m³)", value=0.0, min_value=0.0, max_value=0.0)
+#     K_0 = st.number_input("K_0 (-)", value=1.0, min_value=0.0)
+#     N_c_max = st.number_input("Maximaler Widerstandsfaktor N_c", value=9.0, min_value=0.0)
+#     N_c_option = st.radio("Verlauf von N_c:", ["Hyperbolisch", "Konstant"])
+#     return c_u, gamma, gamma_w, N_c_max, N_c_option, K_0
+def eingabe_bodenschichten():
+    st.header("Bodenschichten")
+    n_schichten = st.number_input("Anzahl der Bodenschichten", min_value=1, max_value=10, value=2, step=1)
 
-def eingabe_pfahlparameter(c_u, gamma):
+    default_data = {
+        "Tiefe_von [m]": [0.0] + [float(i) * 2 for i in range(1, n_schichten)],
+        "Tiefe_bis [m]": [float(i) * 2 for i in range(1, n_schichten + 1)],
+        "c_u [kPa]": [10.0] * n_schichten,
+        "γ' [kN/m³]": [10.0] * n_schichten,
+        "γ_w [kN/m³]": [0.0] * n_schichten,
+        "K₀ [-]": [1.0] * n_schichten,
+        "N_c_max": [9.0] * n_schichten,
+        "N_c_curve": ["Hyperbolisch"] * n_schichten
+    }
+
+    df = pd.DataFrame(default_data)
+    edited_df = st.data_editor(df, num_rows="dynamic", key="boden_tabelle")
+
+    return edited_df
+
+def eingabe_pfahlparameter():
     st.header("Pfahlparameter")
     D = st.number_input("Durchmesser D (m)", value=0.5, min_value=0.0)
     L = st.number_input("Einbindelänge L (m)", value=10.0, min_value=0.0)
@@ -31,8 +50,7 @@ def eingabe_pfahlparameter(c_u, gamma):
     U = np.pi * D
     U_plug = np.pi * (D - 2 * t)
 
-    h_1_default = 2 * c_u / gamma
-    return D, D_plug, L, t, A, A_ann, A_plug, U, U_plug, h_1_default
+    return D, D_plug, L, t, A, A_ann, A_plug, U, U_plug
 
 def eingabe_interaktion():
     st.header("Interaktion Pfahl-Boden")
@@ -68,6 +86,46 @@ def eingabe_berechnungseinstellungen(case):
         n_steps = st.number_input("Anzahl Tiefeninkremente", value=n_steps_default, min_value=10, max_value=1000, step=10)
         return n_steps, None, None, None
 
+def interpolate_profile(boden_df, z):
+    """
+    Interpoliert Bodenkennwerte (c_u, γ, N_c_max, K_0) über gegebene Tiefen z.
+    
+    Parameter:
+    - boden_df: DataFrame mit Spalten ["Tiefe_von [m]", "Tiefe_bis [m]", "c_u [kPa]", "γ [kN/m³]", "N_c_max", "K_0"]
+    - z: Tiefenarray, auf das interpoliert werden soll
+
+    Rückgabe:
+    - c_u, gamma, N_c_max, K_0: jeweils als numpy-Array in Länge von z
+    """
+
+    tiefe_von = boden_df["Tiefe_von [m]"].to_numpy()
+    tiefe_bis = boden_df["Tiefe_bis [m]"].to_numpy()
+    c_u_werte = boden_df["c_u [kPa]"].to_numpy()
+    gamma_werte = boden_df["γ [kN/m³]"].to_numpy()
+    N_c_max_werte = boden_df["N_c_max"].to_numpy()
+    K_0_werte = boden_df["K_0"].to_numpy()
+
+    # Erzeuge Stützstellen
+    z_stuetz = []
+    c_u_stuetz = []
+    gamma_stuetz = []
+    N_c_max_stuetz = []
+    K_0_stuetz = []
+
+    for z1, z2, cu, gamma, nc, k0 in zip(tiefe_von, tiefe_bis, c_u_werte, gamma_werte, N_c_max_werte, K_0_werte):
+        z_stuetz += [z1, z2]
+        c_u_stuetz += [cu, cu]
+        gamma_stuetz += [gamma, gamma]
+        N_c_max_stuetz += [nc, nc]
+        K_0_stuetz += [k0, k0]
+
+    # Interpolation
+    c_u = np.interp(z, z_stuetz, c_u_stuetz)
+    gamma = np.interp(z, z_stuetz, gamma_stuetz)
+    N_c_max = np.interp(z, z_stuetz, N_c_max_stuetz)
+    K_0 = np.interp(z, z_stuetz, K_0_stuetz)
+
+    return c_u, gamma, N_c_max, K_0
 # -------------------------
 # Sonstige Funktionen
 # -------------------------
@@ -88,26 +146,37 @@ def cal_IFR_from_ratio_qbopen_qbclosed(qb_open, qb_closed):
 # Hauptcode
 # -------------------------
 # Eingaben sammeln
-c_u, gamma, gamma_w, N_c_max, N_c_option, K_0 = eingabe_bodenparameter()
-D, D_plug, L, t, A, A_ann, A_plug, U, U_plug, h_1_default = eingabe_pfahlparameter(c_u, gamma)
+# c_u, gamma, gamma_w, N_c_max, N_c_option, K_0 = eingabe_bodenparameter()
+boden_df = eingabe_bodenschichten()
+D, D_plug, L, t, A, A_ann, A_plug, U, U_plug = eingabe_pfahlparameter()
 mu = eingabe_interaktion()
 #IFR_0, h_1 = eingabe_pfropfenmodell(A_ann, A_plug, h_1_default)
 
 n_steps, z_initial, threshold, max_iterations = eingabe_berechnungseinstellungen(case='short')
+z = np.linspace(0, L, n_steps)
 
+# Berechne z-Stützstellen aus Schichten
+c_u, gamma, N_c_max, K_0 = interpolate_profile(boden_df, z)
 # -------------------------
 # Berechnung geschlossener Pfahl
 # -------------------------
-z = np.linspace(0, L, n_steps)
 
-if N_c_option == "Konstant":
+
+if boden_df["N_c_curve"] == "Konstant":
     N_c_z = np.full_like(z, N_c_max)
 else:
     N_c_raw = 6.2 + (z/D) / (0.2454 * (z/D) + 0.4296)
     N_c_z_based_9 = np.minimum(N_c_raw, 9.0)
     N_c_z = N_c_z_based_9 / 9.0 *  N_c_max
 
-q_b = z * gamma + N_c_z * c_u
+q_b = np.zeros(n_steps)
+sig_z0 = np.zeros(n_steps)
+for i in range(len(z)):
+    if i==0:
+        sig_z0 = 0
+    else:
+        sig_z0 += z[i] * gamma[i]
+    q_b[i] = sig_z0 + N_c_z[i] * c_u[i]
 
 
 
