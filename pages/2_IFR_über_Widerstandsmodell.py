@@ -167,7 +167,7 @@ for i in range(len(z)):
     if i==0:
         sig_z0[i] = 0
     else:
-        sig_z0[i] += z[i] * gamma[i]
+        sig_z0[i] += (z[i]-z[i-1]) * gamma[i]
     q_b[i] = sig_z0[i] + N_c_z[i] * c_u[i]
 
 
