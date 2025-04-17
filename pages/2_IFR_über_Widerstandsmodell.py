@@ -25,16 +25,16 @@ def eingabe_bodenschichten():
         "N_c_max": [9.0] * n_schichten,
     }
     df = pd.DataFrame(default_data)
+
     df_display = np.transpose(df)
     for i in range(n_schichten):
         new_key = f"Schicht {i+1}"
         df_display[new_key] = df_display[i]
         del df_display[i]
-    edited_df = st.data_editor(df_display, num_rows="dynamic", key="boden_tabelle")
-
+    st.data_editor(df_display, num_rows="dynamic", key="boden_tabelle")
     
     N_c_option = st.radio("Verlauf von N_c:", ["Hyperbolisch", "Konstant"])
-    return edited_df, N_c_option
+    return df, N_c_option
 
 def eingabe_pfahlparameter():
     st.header("Pfahlparameter")
