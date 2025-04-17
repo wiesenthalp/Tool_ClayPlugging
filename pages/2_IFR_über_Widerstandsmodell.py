@@ -223,13 +223,13 @@ for i in range(len(h)):
         # ------------------------------------------------------------------------
         p = q_plug[i-1]
         # Exponentieller Anstieg
-        delta_stress_exp = np.exp(4 * mu * K_0 * dz_local / D) * (4 * mu * K_0 / D * p + gamma)
+        delta_stress_exp = np.exp(4 * mu * K_0[i] * dz_local / D) * (4 * mu * K_0[i] / D * p + gamma[i])
         # Grenzwert für Schubspannung
-        delta_stress_limit = gamma + c_u * U_plug / A
+        delta_stress_limit = gamma[i] + c_u[i] * U_plug / A
         if delta_stress_exp <= delta_stress_limit:
-            q_plug[i] = p + (np.exp(4 * mu * K_0 * dz_local / D) - 1) * (p + gamma * D / (4 * mu * K_0))
+            q_plug[i] = p + (np.exp(4 * mu * K_0[i] * dz_local / D) - 1) * (p + gamma[i] * D / (4 * mu * K_0[i]))
         else:
-            q_plug[i] = p + (gamma + c_u * U_plug / A) * dz_local
+            q_plug[i] = p + (gamma[i] + c_u[i] * U_plug / A) * dz_local
         # Grenzwert geschlossener Pfahl
         max_q = q_b[i]
         if q_plug[i]> max_q:
