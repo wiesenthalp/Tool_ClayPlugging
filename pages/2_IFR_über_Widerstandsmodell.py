@@ -11,11 +11,11 @@ st.warning('Wiesenthal, P., Henke, S. Concept on plug development in jacked open
 
 def eingabe_bodenschichten():
     st.header("Bodenschichten")
-    n_schichten = st.number_input("Anzahl der Bodenschichten", min_value=1, max_value=10, value=2, step=1)
+    n_schichten = st.number_input("Anzahl der Bodenschichten", min_value=1, max_value=10, value=1, step=1)
 
     default_data = {
-        "Tiefe_von [m]": [0.0] + [float(i) * 2 for i in range(1, n_schichten)],
-        "Tiefe_bis [m]": [float(i) * 2 for i in range(1, n_schichten + 1)],
+        "Tiefe_von [m]": [0.0] + [float(i) * 10 for i in range(1, n_schichten)],
+        "Tiefe_bis [m]": [float(i) * 10 for i in range(1, n_schichten + 1)],
         "c_u [kPa]": [10.0] * n_schichten,
         "γ' [kN/m³]": [10.0] * n_schichten,
         "γ_w [kN/m³]": [0.0] * n_schichten,
