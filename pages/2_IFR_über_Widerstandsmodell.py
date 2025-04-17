@@ -77,11 +77,8 @@ def cal_q_b_open(q_plug, q_ann, A, A_plug, A_ann):
     return (q_plug*A_plug+q_ann*A_ann)/A
 
 def cal_IFR_from_ratio_qbopen_qbclosed(qb_open, qb_closed):
-    x=qb_open/qb_closed
-    if x<0.5:
-        IFR=1.5
-    else:
-        IFR = -5.1298 * x**2 + 4.9121 * x + 0.3277
+    x=qb_open/qb_closed >=0.6
+    IFR = -5.1298 * x**2 + 4.9121 * x + 0.3277
     return IFR
 
 # -------------------------
