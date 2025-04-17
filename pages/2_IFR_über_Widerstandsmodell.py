@@ -21,13 +21,13 @@ def eingabe_bodenschichten():
         "γ_w [kN/m³]": [0.0] * n_schichten,
         "K₀ [-]": [1.0] * n_schichten,
         "N_c_max": [9.0] * n_schichten,
-        "N_c_curve": ["Hyperbolisch"] * n_schichten
     }
-
     df = pd.DataFrame(default_data)
     edited_df = st.data_editor(df, num_rows="dynamic", key="boden_tabelle")
 
-    return edited_df
+    
+    N_c_option = st.radio("Verlauf von N_c:", ["Hyperbolisch", "Konstant"])
+    return edited_df, N_c_option
 
 def eingabe_pfahlparameter():
     st.header("Pfahlparameter")
@@ -139,7 +139,7 @@ def cal_IFR_from_ratio_qbopen_qbclosed(qb_open, qb_closed):
 # -------------------------
 # Eingaben sammeln
 # c_u, gamma, gamma_w, N_c_max, N_c_option, K_0 = eingabe_bodenparameter()
-boden_df = eingabe_bodenschichten()
+boden_df, N_c_option = eingabe_bodenschichten()
 D, D_plug, L, t, A, A_ann, A_plug, U, U_plug = eingabe_pfahlparameter()
 mu = eingabe_interaktion()
 #IFR_0, h_1 = eingabe_pfropfenmodell(A_ann, A_plug, h_1_default)
@@ -154,7 +154,7 @@ c_u, gamma, N_c_max, K_0 = interpolate_profile(boden_df, z)
 # -------------------------
 
 
-if boden_df["N_c_curve"] == "Konstant":
+if N_c_option == "Konstant":
     N_c_z = np.full_like(z, N_c_max)
 else:
     N_c_raw = 6.2 + (z/D) / (0.2454 * (z/D) + 0.4296)
