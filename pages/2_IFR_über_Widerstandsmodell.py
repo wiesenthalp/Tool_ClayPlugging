@@ -8,15 +8,7 @@ st.warning('Wiesenthal, P., Henke, S. Concept on plug development in jacked open
 # -------------------------
 # Eingabefunktionen
 # -------------------------
-# def eingabe_bodenparameter():
-#     st.header("Bodenparameter")
-#     c_u = st.number_input("Undränierte Scherfestigkeit c_u (kPa)", value=10.0, min_value=0.0)
-#     gamma = st.number_input("Wichte γ' (kN/m³)", value=10.0, min_value=0.0)
-#     gamma_w = st.number_input("Wichte Wasser γ_w (kN/m³)", value=0.0, min_value=0.0, max_value=0.0)
-#     K_0 = st.number_input("K_0 (-)", value=1.0, min_value=0.0)
-#     N_c_max = st.number_input("Maximaler Widerstandsfaktor N_c", value=9.0, min_value=0.0)
-#     N_c_option = st.radio("Verlauf von N_c:", ["Hyperbolisch", "Konstant"])
-#     return c_u, gamma, gamma_w, N_c_max, N_c_option, K_0
+
 def eingabe_bodenschichten():
     st.header("Bodenschichten")
     n_schichten = st.number_input("Anzahl der Bodenschichten", min_value=1, max_value=10, value=2, step=1)
