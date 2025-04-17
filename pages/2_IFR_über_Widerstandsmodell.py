@@ -120,16 +120,15 @@ if ifr_mode == "Widerstand":
     IFR_demo = np.zeros(len(ratio))
     for i in range(len(ratio)):
         IFR_demo[i] =  cal_IFR_from_ratio_qbopen_qbclosed(ratio[i], 1.0)
-fig, axes = plt.subplots(1,3, figsize=(16, 8))
-ax=axes[1]
+fig, axes = plt.subplots( figsize=(16, 8))
+ax=axes
 ax.plot(ratio, IFR_demo, label="closed-ended", color = 'black')
 ax.set_xlabel("Ratio q_b [kN/m²]")
 ax.set_ylabel("IFR z [m]")
 ax.set_title("Pfahlspitzendruck")
-ax.set_xlim(left=0)
-ax.set_ylim([z[0], z[-1]])
+ax.set_xlim(left=0, right=1)
+ax.set_ylim(bottom=0)
 ax.grid(True)
-ax.invert_yaxis()
 ax.legend()
 st.pyplot(fig)
 
