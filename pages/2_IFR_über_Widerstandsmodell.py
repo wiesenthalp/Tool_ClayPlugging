@@ -263,6 +263,7 @@ df_q_plug = pd.DataFrame({
     "q_plug [kN/m²]": q_plug,
     "q_b_open [kN/m²]": q_b_open, 
     "q_b_closed [kN/m²]": q_b,
+    'sig_z0 [kN/m²]': sig_z0,
 })
 
 
