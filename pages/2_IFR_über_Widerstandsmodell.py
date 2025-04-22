@@ -138,7 +138,7 @@ def cal_IFR_from_ratio_qbopen_qbclosed(qb_open, qb_closed):
     min_x = 0.15
     P1 = [1,0.05]
     P2 = [min_x, 1.6]
-    y0 = P2[1] + (P2[1]-P1[1])/(P2[0]-P1[0]) * min_x
+    y0 = P2[1] - (P2[1]-P1[1])/(P2[0]-P1[0]) * min_x
     if x<min_x:
         IFR=P2[1]
     else:
