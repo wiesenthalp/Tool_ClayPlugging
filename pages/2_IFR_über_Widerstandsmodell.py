@@ -135,7 +135,7 @@ def cal_q_b_open(q_plug, q_ann, A, A_plug, A_ann):
 
 def cal_IFR_from_ratio_qbopen_qbclosed(qb_open, qb_closed):
     x=qb_open/qb_closed
-    min_x = 0.15
+    min_x = 0.25
     P1 = [1,0.05]
     P2 = [min_x, 1.6]
     y0 = P2[1] - (P2[1]-P1[1])/(P2[0]-P1[0]) * min_x
